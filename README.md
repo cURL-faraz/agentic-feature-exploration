@@ -130,6 +130,11 @@ python -m eeg_research_agent.cli run --mode smoke
   [docs/environment_notes.md](docs/environment_notes.md).
 * **No network was available**, so the run used the synthetic surrogate and
   offline literature mode. Nothing in the pipeline requires network or an API key.
+* **Repository metadata.** The build sandbox forbids creating `./.git`, so the
+  commit history in this checkout lives in `./.gitstore`. Inspect it with
+  `GIT_DIR=$PWD/.gitstore git log --oneline`, or turn it into a completely
+  standard repository with `mv .gitstore .git`. Pushing to GitHub was not
+  possible (no `gh`, no network); see the final report for the exact blocker.
 
 ## API keys (optional)
 
