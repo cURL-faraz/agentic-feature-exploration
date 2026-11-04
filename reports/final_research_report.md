@@ -107,6 +107,7 @@ Formulas, motivations, units and validation status for every feature are in `rep
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_abs_power_theta.png`
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_approximate_entropy.png`
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_correlation.png`
+- `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_cross_band_entropy.png`
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_dfa_alpha1.png`
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_distributions.png`
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_higuchi_fractal_dimension.png`
@@ -123,10 +124,14 @@ Formulas, motivations, units and validation status for every feature are in `rep
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_rel_power_alpha.png`
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_rel_power_beta.png`
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_rel_power_gamma.png`
+- `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_spectral_kurtosis.png`
+- `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_spectral_skewness.png`
+- `/Users/faraz/agentic-feature-exploration/artifacts/figures/feature_wavelet_detail_energy_2.png`
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/model_comparison_test.png`
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/stage_distribution.png`
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/subject_level_abs_power_alpha.png`
 - `/Users/faraz/agentic-feature-exploration/artifacts/figures/subject_level_abs_power_beta.png`
+- `/Users/faraz/agentic-feature-exploration/artifacts/figures/subject_level_log_power_beta.png`
 
 ## 6. Statistical Comparisons
 Full tables, assumption checks and post-hoc results are in `reports/statistical_analysis.md`. The headline comparison is repeated-measures (Friedman) on subject x stage means, with paired Wilcoxon post-hoc tests and fdr_bh correction across the 109 tested features.
