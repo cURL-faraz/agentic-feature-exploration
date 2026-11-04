@@ -193,14 +193,16 @@ def prepare_dataset(state: ResearchState, ctx: AgentContext) -> dict[str, Any]:
     preprocessing = ctx.pipeline.preprocess()
     segmentation = ctx.pipeline.segment_and_split()
     splits = ctx.artifacts.splits
+    # Merge rather than replace: the dataset summary gathered by inspect_dataset
+    # (including ``data_origin``) must survive into the final state.
+    metadata = dict(state.dataset_metadata)
+    metadata["segmentation"] = {
+        key: value for key, value in segmentation["segment"].items() if key != "exclusions"
+    }
     return {
         "preprocessing_config": preprocessing,
         "subject_splits": splits.to_dict() if splits is not None else {},
-        "dataset_metadata": {
-            "segmentation": {
-                key: value for key, value in segmentation["segment"].items() if key != "exclusions"
-            }
-        },
+        "dataset_metadata": metadata,
     }
 
 

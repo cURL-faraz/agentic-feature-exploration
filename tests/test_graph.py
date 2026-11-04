@@ -157,6 +157,7 @@ def test_full_agentic_workflow_runs_offline(base_config):
     assert summary["n_features_approved"] > 0
     assert summary["n_features_rejected"] == 0
     assert summary["verification_ok"] is True
+    assert summary["data_origin"] == "synthetic", "the dataset summary must survive to the end of the run"
     assert summary["reports"], "the workflow must write reports"
     assert summary["llm_calls"], "the LLM steps must run (offline provider by default)"
     assert all(call.get("provider") == "offline" for call in summary["llm_calls"])
