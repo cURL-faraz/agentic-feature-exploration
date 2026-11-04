@@ -1,0 +1,43 @@
+# Statistical-analysis and predictive-evaluation configuration.
+
+statistics:
+  alpha: 0.05
+  correction: fdr_bh              # fdr_bh | holm | bonferroni | none
+  min_group_size: 15              # skip comparisons with fewer observations
+  normality_alpha: 0.05
+  use_subject_aggregation: true   # repeated-measures aware primary analysis
+  permutation_iterations: 1000
+  bootstrap_iterations: 1000
+  random_state: 20240517
+  effect_size_ci: 0.95
+
+features_selection:
+  max_features_for_multivariable: 40
+  correlation_threshold: 0.9
+  mutual_information_neighbors: 5
+  rfe_step: 0.1
+
+predictive:
+  test_fraction: 0.25
+  validation_fraction: 0.25       # of the remaining (train/val/test, subject-grouped)
+  cv_folds: 3
+  classifiers: [majority, logistic_regression, random_forest, gradient_boosting, svm]
+  primary_metric: balanced_accuracy
+  per_stage_focus: [N1, N2, REM]
+  ablations:
+    - all_features
+    - conventional_only
+    - literature_derived_only
+    - novel_only
+    - no_events
+    - no_spectral
+    - top_k_mutual_information
+
+hypotheses:
+  interaction_pairs_max: 12       # bounded search space for interaction terms
+  confirmatory_min_effect: 0.2    # minimum |Hedges g| for a confirmatory claim
+
+artifacts:
+  save_figures: true
+  figure_dpi: 120
+  top_feature_plots: 12

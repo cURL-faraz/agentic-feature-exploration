@@ -1,0 +1,85 @@
+# Feature-engineering configuration.
+#
+# Frequency bands follow the classical sleep-EEG bands used in the
+# Rechtschaffen & Kales / AASM scoring tradition.  Bands are *data-driven
+# choices*: they are declared here, cited in docs/mathematical_features.md and
+# never silently changed between extraction runs.
+
+bands:
+  delta: [0.5, 4.0]
+  theta: [4.0, 8.0]
+  alpha: [8.0, 12.0]
+  sigma: [12.0, 16.0]
+  beta: [16.0, 30.0]
+  gamma: [30.0, 45.0]
+
+psd:
+  method: welch
+  welch_window_seconds: 4.0
+  welch_overlap_fraction: 0.5
+  detrend: constant
+
+families:
+  spectral: true
+  temporal: true
+  nonlinear: true
+  wavelet: true
+  events: true
+  literature_derived: true
+  novel: true
+
+nonlinear:
+  sample_entropy_m: 2
+  sample_entropy_r_factor: 0.2
+  approx_entropy_m: 2
+  approx_entropy_r_factor: 0.2
+  permutation_entropy_order: 4
+  permutation_entropy_delay: 1
+  higuchi_kmax: 10
+  dfa_scales: [4, 6, 8, 10, 12, 16, 20, 32, 48, 64]
+  dfa_alpha1_range: [4, 16]
+  dfa_alpha2_range: [16, 64]
+  lz_threshold: median
+  max_samples: 6000            # entropy estimators are capped for runtime control
+
+wavelet:
+  # Symlet-4/Daubechies-2 style filter bank implemented in eeg/wavelets.py
+  wavelet: db4
+  levels: 5
+
+events:
+  spindle:
+    band_hz: [11.0, 16.0]
+    envelope_smoothing_seconds: 0.1
+    threshold_factor: 1.5         # x moving RMS
+    threshold_window_seconds: 2.0
+    min_duration_s: 0.5
+    max_duration_s: 3.0
+    min_zero_cross_rate_hz: 10.0
+    max_zero_cross_rate_hz: 18.0
+    refractory_s: 0.5
+    amplitude_percentile: 75.0
+    min_amplitude_uv: 8.0         # absolute envelope floor (Wamsley et al. 2012 use 8 uV)
+  k_complex:
+    lowpass_hz: 4.0
+    neg_threshold_factor: 2.5     # x robust scale of the low-passed signal
+    min_amplitude_uv: 30.0        # AASM/R&K-style minimum negative peak amplitude
+    min_duration_s: 0.5
+    max_duration_s: 2.0
+    rebound_required: true
+    refractory_s: 1.0
+  slow_wave:
+    band_hz: [0.5, 2.0]
+    min_duration_s: 0.3
+    max_duration_s: 1.5
+    neg_threshold_factor: 1.5
+    min_amplitude_uv: 20.0        # literature-motivated floor (Riedner et al. used -40 uV)
+    refractory_s: 0.3
+    slope_window_s: 0.2
+
+novel:
+  spectral_concentration_alpha: [2.0, 3.0]
+  subwindow_seconds: 2.0
+  epsilon: 1.0e-12
+  instability_bands: [delta, sigma, beta]
+  transition_lookback_epochs: 1
