@@ -173,6 +173,24 @@ More depth, including the design reasoning behind each decision:
 | lockbox | Sleep-EDF SC 20-39 | 20 | same population, unseen during search |
 | external | Sleep-EDF Telemetry (ST) | 22 | different study, includes temazepam nights |
 
+**Reference baseline** (Sleep-EDF-20, 42 307 epochs, 5-fold subject-grouped CV, 26 standard
+features + neighbouring-epoch context, gradient boosting):
+
+| accuracy | macro-F1 | Cohen's κ | F1 W | F1 N1 | F1 N2 | F1 N3 | F1 REM |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0.802 | 0.741 | 0.732 | 0.833 | **0.392** | 0.869 | 0.875 | 0.735 |
+
+Biggest confusions (epochs, both directions): N1↔REM 1656, N2↔REM 1613, N1↔W 1208, N1↔N2 1048.
+That is the gap the agents are trying to close.
+
+**First real-data verdicts** (the two hand-written features in [`examples/`](examples/)): both target
+N1 vs REM, and both were **rejected**. On real Fpz-Cz neither separates N1 from REM (AUC 0.52 and
+0.48). They do separate other pairs (eye-movement index: N1 vs W, AUC 0.80), but their added value
+over the baseline is small and unproven: +0.006 and +0.004 in N1/N2/REM F1, p = 0.053 and 0.066
+against a threshold of 0.001. The theta-burstiness feature had *passed* on the synthetic world
+where that effect was planted, so this is a reminder that the synthetic world tests the machinery,
+not the physiology.
+
 Channel Fpz-Cz at 100 Hz; R&K stages 3+4 merged into N3; movement/unknown epochs dropped; 30 min of
 wake kept around sleep. Other common benchmarks (SHHS, MASS) require a data-use agreement - once you
 have them, convert them with `write_cohort` and use them as extra external cohorts.
