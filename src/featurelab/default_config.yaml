@@ -70,7 +70,8 @@ llm:
     critic:   ["nvidia/nemotron-3.5-super-vl:free", "liquid/lfm-3-1.7b:free"]
   auto_free_fallback: true           # if every listed model fails, try any currently-free model
   temperature: {scout: 0.2, inventor: 0.9, critic: 0.1}
-  max_tokens: 8000                   # reasoning models spend most of it thinking
+  max_tokens: 8000                   # answer + hidden reasoning
+  reasoning_max_tokens: 3000         # cap on hidden reasoning, so an answer always fits
   min_seconds_between_calls: 4       # free tier is ~20 requests/minute
   daily_call_cap: 45                 # free tier is ~50 requests/day without credits
   timeout_s: 180

@@ -160,11 +160,20 @@ class OpenRouterClient:
                 response = self._sdk().chat.completions.create(
                     model=model, temperature=temperature, max_tokens=int(self.cfg["max_tokens"]),
                     messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+                    **self._reasoning_kwargs(),
                 )
-                text = (response.choices[0].message.content or "").strip()
+                choice = response.choices[0]
+                text = (choice.message.content or "").strip()
                 if not text:
-                    raise LLMError("empty response")
+                    raise LLMError("empty response " + _why_empty(choice, response))
             except Exception as exc:  # noqa: BLE001 - try the next model
+                if _is_daily_quota(exc):
+                    # Account-wide: every other free model would fail the same way, and each
+                    # attempt is wasted time.  Stop the run cleanly instead.
+                    self.on_call({"role": role, "model": model, "ok": False,
+                                  "error": f"{model}: daily free quota exhausted", "seconds": 0})
+                    raise DailyCapReached("OpenRouter daily free-model quota exhausted "
+                                          "(resets at 00:00 UTC; ~$10 of credits raises it to 1000/day)") from exc
                 message = f"{model}: {type(exc).__name__}: {str(exc)[:200]}"
                 errors.append(message)
                 self.on_call({"role": role, "model": model, "ok": False, "error": message,
@@ -181,6 +190,30 @@ class OpenRouterClient:
             self.on_call({"role": role, "model": model, "ok": True, "cached": False, "seconds": seconds, **usage})
             return LLMResult(text, model, seconds=seconds, usage=usage)
         raise LLMError("all models failed for role " + role + ": " + " | ".join(errors[-4:]))
+
+    def _reasoning_kwargs(self) -> dict:
+        """Cap hidden 'thinking' so reasoning models leave room for the actual answer.
+
+        Without a cap, a reasoning model can spend the whole ``max_tokens`` budget
+        thinking and return empty content - which still costs one daily request.
+        """
+        budget = self.cfg.get("reasoning_max_tokens")
+        if not budget:
+            return {}
+        return {"extra_body": {"reasoning": {"max_tokens": int(budget), "exclude": True}}}
+
+
+def _why_empty(choice, response) -> str:
+    usage = getattr(response, "usage", None)
+    details = getattr(usage, "completion_tokens_details", None)
+    return (f"(finish_reason={getattr(choice, 'finish_reason', None)}, "
+            f"completion_tokens={getattr(usage, 'completion_tokens', None)}, "
+            f"reasoning_tokens={getattr(details, 'reasoning_tokens', None)})")
+
+
+def _is_daily_quota(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return "free-models-per-day" in text or ("per-day" in text and "429" in text)
 
 
 class ScriptedClient:

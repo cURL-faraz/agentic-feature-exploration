@@ -203,6 +203,14 @@ against a threshold of 0.001. The theta-burstiness feature had *passed* on the s
 where that effect was planted, so this is a reminder that the synthetic world tests the machinery,
 not the physiology.
 
+**First live agent run** (2026-11-10, free models): the Scout turned 40 papers into 8 grounded
+inspiration cards; the Inventor proposed 4 features, all rejected. Two were near-copies of baseline
+features (|ρ| = 0.97 with Hjorth mobility, 0.95 with relative gamma), one added nothing
+(-0.001), and the best, a vertex-sharp-wave count, gained +0.0047 (p = 0.024, 12/20 subjects
+improved): promising, but short of the pre-registered bar. The run stopped on OpenRouter's
+50-requests/day free quota; reasoning models returning empty answers had used most of it, which is
+why `reasoning_max_tokens` now caps their hidden thinking.
+
 Channel Fpz-Cz at 100 Hz; R&K stages 3+4 merged into N3; movement/unknown epochs dropped; 30 min of
 wake kept around sleep. Other common benchmarks (SHHS, MASS) require a data-use agreement - once you
 have them, convert them with `write_cohort` and use them as extra external cohorts.
