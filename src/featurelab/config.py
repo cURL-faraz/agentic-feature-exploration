@@ -45,7 +45,22 @@ def load_config(path: str | Path | None = None) -> dict[str, Any]:
     if os.environ.get("FEATURELAB_DATA"):
         config["data"]["root"] = os.environ["FEATURELAB_DATA"]
     config["data"]["root"] = str(Path(config["data"]["root"]).expanduser().resolve())
+    _apply_model_override(config, os.environ.get("FEATURELAB_LLM_MODEL", ""))
     return config
+
+
+def _apply_model_override(config: dict[str, Any], value: str) -> None:
+    """``FEATURELAB_LLM_MODEL=model-a[,model-b]`` puts these models first for every role.
+
+    The configured per-role models stay behind them as fallbacks, so one flaky
+    free model does not stop the run.
+    """
+    pinned = [m.strip() for m in value.split(",") if m.strip()]
+    if not pinned:
+        return
+    roles = config["llm"]["roles"]
+    for role, models in roles.items():
+        roles[role] = pinned + [m for m in (models or []) if m not in pinned]
 
 
 def protocol_hash(config: dict[str, Any]) -> str:

@@ -5,6 +5,8 @@ services:
     env_file:
       - path: .env          # OPENROUTER_API_KEY lives here (never baked into the image)
         required: false
+    environment:
+      FEATURELAB_DATA: /data  # wins over a host path in .env, so the same .env works in both
     volumes:
       - ./data/featurelab:/data   # raw EDF, epoch caches, ledger, run reports
       - ./:/work                  # your featurelab.yaml, feature files to evaluate, exports

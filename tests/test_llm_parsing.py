@@ -26,3 +26,13 @@ def test_stage_names_are_normalised():
     meta = dict(THETA_META, prediction={"higher_in": "R", "lower_in": "stage 1"}.copy())
     meta["prediction"]["lower_in"] = "S1"
     assert _parse_proposal(_proposal(meta, THETA_CODE)).prediction.lower_in == "N1"
+
+
+def test_model_override_puts_pinned_models_first(monkeypatch):
+    from featurelab.config import load_config
+
+    monkeypatch.setenv("FEATURELAB_LLM_MODEL", "vendor/model-a:free, vendor/model-b:free")
+    config = load_config()
+    for models in config["llm"]["roles"].values():
+        assert models[:2] == ["vendor/model-a:free", "vendor/model-b:free"]
+        assert len(models) > 2  # configured models stay as fallbacks
