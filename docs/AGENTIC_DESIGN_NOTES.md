@@ -8,7 +8,7 @@ system; the EEG details are the example.
 
 ## Step 0 - Audit before you build
 
-**What happened.** The first version of this repo (now in `legacy/`) looked
+**What happened.** The first version of this repo (commit `3e73ecd`, removed from the tree) looked
 impressive: 22k lines, 18 LangGraph nodes, "83 checks, 0 failures". Tracing the
 data flow showed that the LLM's output was discarded (`requested_by_model` was
 only a flag; extraction always used the full fixed registry), no feature was
