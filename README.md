@@ -60,6 +60,18 @@ cp .env.example .env        # then paste your key from https://openrouter.ai/key
 featurelab models           # shows which of the configured models are free today
 ```
 
+`.env` needs only two lines:
+
+```bash
+OPENROUTER_API_KEY=sk-or-v1-...                      # required for the agents
+FEATURELAB_LLM_MODEL=nvidia/nemotron-3.5-super-vl:free  # optional: tried first by every agent
+```
+
+`FEATURELAB_LLM_MODEL` puts your model at the front of every role's list; the per-role lists in
+`default_config.yaml` stay behind it as fallbacks. One model for all roles is simple, but the
+critic then shares the inventor's blind spots; to keep a different family for the critic, leave
+the variable empty and edit `llm.roles` in `featurelab.yaml` instead (section 5).
+
 Free OpenRouter models are enough. They are rate limited (roughly 20 requests/minute and 50/day
 without credits), so the client spaces calls, caches every answer, counts calls per day and falls
 back to other free models automatically. Everything except the LLM agents works **without a key**.
@@ -203,22 +215,53 @@ Copy only what you want to change into `featurelab.yaml` in your working directo
 loop: {max_iterations: 20, target_accepted: 2}
 llm:
   roles:
-    inventor: ["deepseek/deepseek-r1-0528:free", "qwen/qwen3-coder:free"]
+    inventor: ["nvidia/nemotron-3.5-super-vl:free", "nvidia/nemotron-3-ultra-550b-a55b:free"]
+    critic:   ["google/gemma-4-31b-it:free"]
 ```
 
-## 6. Layout
+Thresholds under `evaluation:` are the pre-registered protocol: changing them changes the protocol
+hash, and results under different hashes are never mixed.
+
+## 6. What each part does
 
 ```
 src/featurelab/
-  data/          download · sleepedf (EDF -> epochs) · cohort (on-disk format) · synthetic (controls)
-  features/      contract · baseline · gate (static checks) · runner (sandboxed execution)
-  evaluation/    modeling (context, CV) · metrics (per-subject stats) · stages (the judge)
-  llm/           client (OpenRouter + scripted)
-  agents/        schemas · prompts · roles (scout/inventor/critic) · literature · scripted
-  orchestrator/  graph (LangGraph loop) · steps · ledger (SQLite) · report
-tests/           14 tests, offline, ~90 s
-legacy/          the first version of this project, kept for reference
+  config.py + default_config.yaml   the protocol: data roles, thresholds, models, loop limits
+  cli.py                            the `featurelab` command (one subcommand per step)
+  data/
+    download.py    fetches Sleep-EDF from PhysioNet, verifies SHA-256, resumes safely
+    sleepedf.py    EDF + hypnogram -> 30-s Fpz-Cz epochs, stage mapping, wake trimming
+    cohort.py      the on-disk cohort format (X.npy, labels, subjects, Welch PSD) - add your own data here
+    synthetic.py   a fake cohort with a planted effect, for the positive/negative controls
+  features/
+    contract.py    what a feature function may receive, import and return
+    baseline.py    the 26 standard features every candidate must beat
+    gate.py        static check of generated code (imports, dunders, randomness, signature)
+    runner.py      runs feature code in a separate process: no keys, CPU/time limits, probes
+  evaluation/
+    modeling.py    neighbouring-epoch context, subject-grouped folds, the classifier
+    metrics.py     N1/N2/REM F1 per subject, confusion pairs, paired Wilcoxon test
+    stages.py      the judge: A screen -> B added value + shuffled null -> C lockbox/external
+  llm/client.py    OpenRouter access: per-role model lists, fallback, rate limit, daily cap, cache
+  agents/
+    literature.py  OpenAlex search: most-cited + recent sleep-EEG papers
+    prompts.py     system prompts for each role
+    schemas.py     pydantic shapes of every LLM answer (validated, repaired once)
+    roles.py       Scout (papers -> inspiration cards), Inventor (card -> formula + code),
+                   Critic (reviews the proposal before any compute is spent)
+    scripted.py    canned answers so the loop runs offline (tests, demos)
+  orchestrator/
+    graph.py       the LangGraph state machine: who runs next, and when to stop
+    steps.py       glue between graph nodes and the judge (gate+run, lockbox budget)
+    ledger.py      SQLite memory: every hypothesis, verdict and LLM call; dedup; test budget
+    report.py      run reports (markdown) and feature-table export
+tests/             15 offline tests (~90 s): gate, parsing, judge controls, the full loop
+examples/          two hand-written features to copy when writing your own
+docs/              design notes: why each decision was made, interview Q&A
 ```
+
+The first, single-agent version of this project is no longer in the tree; it is preserved in git
+history at commit `3e73ecd` (`git show 3e73ecd:README.md`).
 
 ## 7. Limitations (read before presenting results)
 
