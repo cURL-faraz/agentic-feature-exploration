@@ -1,0 +1,9 @@
+.git
+.gitstore
+data
+legacy
+exports
+**/__pycache__
+.env
+*.egg-info
+.pytest_cache

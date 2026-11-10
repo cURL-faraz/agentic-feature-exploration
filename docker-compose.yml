@@ -1,0 +1,12 @@
+services:
+  featurelab:
+    build: .
+    image: featurelab:latest
+    env_file:
+      - path: .env          # OPENROUTER_API_KEY lives here (never baked into the image)
+        required: false
+    volumes:
+      - ./data/featurelab:/data   # raw EDF, epoch caches, ledger, run reports
+      - ./:/work                  # your featurelab.yaml, feature files to evaluate, exports
+    # On Linux, keep files owned by you: `UID=$(id -u) docker compose run ...`
+    user: "${UID:-1000}"

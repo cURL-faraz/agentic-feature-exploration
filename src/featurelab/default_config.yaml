@@ -58,10 +58,10 @@ llm:
   base_url: https://openrouter.ai/api/v1
   # Free models change often. These are preferences; `featurelab models` lists what
   # is free today, and the client falls back down the list on errors / rate limits.
-  roles:
-    scout:    ["meta-llama/llama-3.3-70b-instruct:free", "google/gemma-3-27b-it:free", "mistralai/mistral-small-3.2-24b-instruct:free"]
-    inventor: ["deepseek/deepseek-r1-0528:free", "qwen/qwen3-coder:free", "deepseek/deepseek-chat-v3-0324:free"]
-    critic:   ["meta-llama/llama-3.3-70b-instruct:free", "google/gemma-3-27b-it:free", "mistralai/mistral-small-3.2-24b-instruct:free"]
+  roles:   # checked against the live free list on 2026-11-10 (`featurelab models` to re-check)
+    scout:    ["google/gemma-4-26b-a4b-it:free", "nvidia/nemotron-3.5-lightning:free", "google/gemma-4-31b-it:free"]
+    inventor: ["nvidia/nemotron-3-ultra-550b-a55b:free", "cohere/north-mini-code:free", "google/gemma-4-31b-it:free"]
+    critic:   ["google/gemma-4-31b-it:free", "thinkingmachines/inkling-2-small:free", "xingchen-agi/xing4.0-29b-a4b:free"]
   auto_free_fallback: true           # if every listed model fails, try any currently-free model
   temperature: {scout: 0.2, inventor: 0.9, critic: 0.1}
   max_tokens: 4000

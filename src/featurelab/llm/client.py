@@ -57,7 +57,9 @@ def list_free_models(timeout: float = 30) -> list[dict]:
     free = []
     for model in data:
         pricing = model.get("pricing") or {}
-        if str(pricing.get("prompt")) in {"0", "0.0"} and str(pricing.get("completion")) in {"0", "0.0"}:
+        is_free = str(pricing.get("prompt")) in {"0", "0.0"} and str(pricing.get("completion")) in {"0", "0.0"}
+        is_text = "text" in str((model.get("architecture") or {}).get("output_modalities", ["text"]))
+        if is_free and is_text and model["id"].endswith(":free"):
             free.append({"id": model["id"], "context_length": model.get("context_length"),
                          "name": model.get("name")})
     return sorted(free, key=lambda m: m["id"])
