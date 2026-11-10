@@ -58,13 +58,19 @@ llm:
   base_url: https://openrouter.ai/api/v1
   # Free models change often. These are preferences; `featurelab models` lists what
   # is free today, and the client falls back down the list on errors / rate limits.
-  roles:   # checked against the live free list on 2026-11-10 (`featurelab models` to re-check)
-    scout:    ["google/gemma-4-26b-a4b-it:free", "nvidia/nemotron-3.5-lightning:free", "google/gemma-4-31b-it:free"]
-    inventor: ["nvidia/nemotron-3-ultra-550b-a55b:free", "cohere/north-mini-code:free", "google/gemma-4-31b-it:free"]
-    critic:   ["google/gemma-4-31b-it:free", "thinkingmachines/inkling-2-small:free", "xingchen-agi/xing4.0-29b-a4b:free"]
+  # Chosen 2026-11-10 by a live smoke test (same inventor task for each candidate):
+  #   nemotron-3.5-super-vl  valid JSON + gate-clean code, 28 s          -> primary for all roles
+  #   lfm-3-1.7b             needs ~8k tokens of reasoning; imported typing -> fallback only
+  #   inkling-2-small        403 "not available in your region"           -> not usable here
+  #   parallel/decisions-fast  not a chat model (decisions endpoint only)  -> not usable
+  # The critic would ideally be another model family; no comparably capable one passed.
+  roles:
+    scout:    ["nvidia/nemotron-3.5-super-vl:free", "liquid/lfm-3-1.7b:free"]
+    inventor: ["nvidia/nemotron-3.5-super-vl:free", "liquid/lfm-3-1.7b:free"]
+    critic:   ["nvidia/nemotron-3.5-super-vl:free", "liquid/lfm-3-1.7b:free"]
   auto_free_fallback: true           # if every listed model fails, try any currently-free model
   temperature: {scout: 0.2, inventor: 0.9, critic: 0.1}
-  max_tokens: 4000
+  max_tokens: 8000                   # reasoning models spend most of it thinking
   min_seconds_between_calls: 4       # free tier is ~20 requests/minute
   daily_call_cap: 45                 # free tier is ~50 requests/day without credits
   timeout_s: 180

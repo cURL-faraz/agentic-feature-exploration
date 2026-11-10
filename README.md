@@ -64,7 +64,7 @@ featurelab models           # shows which of the configured models are free toda
 
 ```bash
 OPENROUTER_API_KEY=sk-or-v1-...                      # required for the agents
-FEATURELAB_LLM_MODEL=nvidia/nemotron-3.5-super-vl:free  # optional: tried first by every agent
+FEATURELAB_LLM_MODEL=                                    # optional: override every agent's model
 ```
 
 `FEATURELAB_LLM_MODEL` puts your model at the front of every role's list; the per-role lists in
