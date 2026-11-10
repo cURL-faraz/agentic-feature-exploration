@@ -18,14 +18,18 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import socket
 import os
 import re
 import sys
+import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 BASE = "https://physionet-open.s3.amazonaws.com/sleep-edfx/1.0.0"
+
+socket_timeout = 120  # seconds; without it a stalled connection hangs forever
 
 
 def data_root() -> Path:
@@ -83,7 +87,9 @@ def fetch(name: str, expected: str, root: Path) -> str:
     if target.is_file() and _sha256(target) == expected:
         return f"skip {name}"
     tmp = target.with_suffix(target.suffix + ".part")
-    for attempt in range(4):
+    for attempt in range(6):
+        if attempt:
+            time.sleep(min(120, 5 * 2**attempt))  # exponential backoff: the server is throttling us
         try:
             urllib.request.urlretrieve(f"{BASE}/{name}", tmp)
             if _sha256(tmp) != expected:
@@ -98,9 +104,10 @@ def fetch(name: str, expected: str, root: Path) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("cohorts", nargs="+", choices=["sc20", "sc_lockbox", "st", "sc78"])
-    parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args(argv)
 
+    socket.setdefaulttimeout(socket_timeout)
     root = data_root()
     sums = _sums()
     names: list[str] = []

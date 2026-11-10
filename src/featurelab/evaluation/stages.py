@@ -139,11 +139,21 @@ class Evaluator:
                 if len(np.unique(c.y[m])) == 2:
                     total += 1
                     agree += (roc_auc_score(c.y[m] == STAGE_CODE[b], column[m]) - 0.5) * (auc - 0.5) > 0
-            pairs[f"{a}vs{b}"] = {"auc": round(auc, 4), "shift": round(abs(auc - 0.5), 4),
-                                  "subject_consistency": round(agree / max(total, 1), 3)}
+            n1, n2 = int((c.y[mask] == STAGE_CODE[a]).sum()), int((c.y[mask] == STAGE_CODE[b]).sum())
+            null_se = float(np.sqrt((n1 + n2 + 1) / (12.0 * n1 * n2)))  # SE of AUC under "no effect"
+            consistency = agree / max(total, 1)
+            shift = abs(auc - 0.5)
+            pairs[f"{a}vs{b}"] = {
+                "auc": round(auc, 4), "shift": round(shift, 4), "z": round(shift / null_se, 2),
+                "subject_consistency": round(consistency, 3),
+                # a pair counts only if the effect is big, beyond chance, AND holds in most subjects
+                "counts": bool(shift >= float(s["min_auc_shift"]) and shift / null_se >= 3.0
+                               and consistency >= float(s.get("min_subject_consistency", 0.7))),
+            }
         out["pair_auc"] = pairs
-        best = max((v["shift"] for v in pairs.values()), default=0.0)
-        out["best_auc_shift"] = best
+        counting = [v["shift"] for v in pairs.values() if v["counts"]]
+        best = max(counting, default=0.0)
+        out["best_auc_shift"] = max((v["shift"] for v in pairs.values()), default=0.0)
 
         if predicted and predicted.get("higher_in") in STAGE_CODE and predicted.get("lower_in") in STAGE_CODE:
             hi = np.nanmedian(column[c.y == STAGE_CODE[predicted["higher_in"]]])
@@ -152,8 +162,10 @@ class Evaluator:
 
         if rhos[most] > float(s["max_redundancy_rho"]):
             reasons.append(f"redundant with baseline `{most}` (|rho|={rhos[most]:.3f})")
-        if best < float(s["min_auc_shift"]):
-            reasons.append(f"does not separate any confused pair (best |AUC-0.5|={best:.3f})")
+        if best == 0.0:
+            reasons.append("does not reliably separate any confused pair "
+                           f"(best |AUC-0.5|={out['best_auc_shift']:.3f}; needs >= {s['min_auc_shift']}, "
+                           f"z >= 3 and the same direction in >= {s.get('min_subject_consistency', 0.7):.0%} of subjects)")
         return {**out, "passed": not reasons, "reason": "; ".join(reasons) or "passed"}
 
     # --------------------------------------------------------------- stage B #

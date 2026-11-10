@@ -32,7 +32,8 @@ evaluation:
   screen:                            # Stage A - cheap filters, kill bad ideas early
     max_nan_fraction: 0.05
     max_redundancy_rho: 0.95         # |Spearman| with any baseline feature
-    min_auc_shift: 0.05              # |AUC - 0.5| on at least one confusion pair
+    min_auc_shift: 0.05              # |AUC - 0.5| on at least one confusion pair (and z >= 3)
+    min_subject_consistency: 0.7     # same direction of effect in >= 70% of subjects
     subsample: 8000
 
   incremental:                       # Stage B - does it ADD information?
@@ -42,7 +43,8 @@ evaluation:
     null_shuffles: 2                 # shuffled-copy control: gain must beat noise
 
   confirm:                           # Stage C - lockbox (same population, unseen)
-    alpha: 0.05                      # Holm-corrected across finalists of a run
+    alpha: 0.05                      # split across all lockbox looks ever made (Bonferroni)
+    max_looks: 10                    # the lockbox can be opened at most this many times per protocol
     min_delta: 0.0
 
 sandbox:
