@@ -170,7 +170,7 @@ More depth, including the design reasoning behind each decision:
 | Role | Cohort | Subjects | Why |
 | --- | --- | --- | --- |
 | discovery | Sleep-EDF SC 0-19 ("Sleep-EDF-20") | 20 | the standard single-channel benchmark |
-| lockbox | Sleep-EDF SC 20-39 | 20 | same population, unseen during search |
+| lockbox | Sleep-EDF SC 20-39 | 19 (no subject 39 in the dataset) | same population, unseen during search |
 | external | Sleep-EDF Telemetry (ST) | 22 | different study, includes temazepam nights |
 
 **Reference baseline** (Sleep-EDF-20, 42 307 epochs, 5-fold subject-grouped CV, 26 standard
