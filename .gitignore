@@ -56,3 +56,6 @@ artifacts/execution_logs/*
 *.fif
 *.edf
 *.bdf
+
+# ---- featurelab data (raw EDF + epoch caches) ----
+data/featurelab/
